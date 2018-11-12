@@ -1,0 +1,42 @@
+version: '3'
+
+services:
+
+  docker-mysql:
+    build:
+      context: . 
+      dockerfile: mysql_dockerfile
+    ports:
+      - "6603:3306"
+    networks:
+      - net-spring-db
+    environment:
+      - MYSQL_DATABASE=compose
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=root
+      - MYSQL_ROOT_PASSWORD=root
+    container_name: docker-mysql
+      
+  springbootapp:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - docker-mysql
+    ports:
+      - "9876:8080"
+    networks:
+      - net-spring-db
+    volumes:
+      - .:/vol/development
+    environment:
+      - DATABASE_HOST=docker-mysql
+      - DATABASE_USER=root
+      - DATABASE_PASSWORD=root
+      - DATABASE_NAME=compose  
+      - DATABASE_PORT=3306
+    command: mvn clean spring-boot:run
+    
+networks:
+  net-spring-db:
+    driver: bridge
